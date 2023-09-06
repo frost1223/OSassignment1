@@ -19,6 +19,7 @@ void kernel_copy(enum kernel ktype, struct buf *b)
   char* addr = 0x0; 
   
   if (ktype == NORMAL)
+  
     addr = (char *)RAMDISK + diskaddr;
   else if (ktype == RECOVERY)
     addr = (char *)RECOVERYDISK + diskaddr;

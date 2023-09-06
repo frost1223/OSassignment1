@@ -97,6 +97,7 @@ void start()
     w_pmpcfg0(0x0);
   #endif
 
+
   /* CSE 536: With kernelpmp2, isolate 118-120 MB and 122-126 MB using NAPOT */ 
   #if defined(KERNELPMP2)
     w_pmpaddr0(0x0ull);
@@ -104,21 +105,39 @@ void start()
   #endif
 
   /* CSE 536: Verify if the kernel is untampered for secure boot */
-  if (!is_secure_boot()) {
-    /* Skip loading since we should have booted into a recovery kernel 
-     * in the function is_secure_boot() */
-    goto out;
-  }
+  // if (!is_secure_boot()) {
+  //   /* Skip loading since we should have booted into a recovery kernel 
+  //    * in the function is_secure_boot() */
+  //   goto out;
+  // }
   
   /* CSE 536: Load the NORMAL kernel binary (assuming secure boot passed). */
-  // uint64 kernel_load_addr       = find_kernel_load_addr(NORMAL);
-  // uint64 kernel_binary_size     = find_kernel_size(NORMAL);     
+  uint64 kernel_load_addr       = find_kernel_load_addr(NORMAL);
+  uint64 kernel_binary_size     = find_kernel_size(NORMAL);     
   uint64 kernel_entry           = find_kernel_entry_addr(NORMAL);
-  
+  struct buf* kernel_buf;
+  kernel_buf->blockno = 4;
+  while(kernel_binary_size !=0){
+    if(kernel_binary_size>1024){
+
+     kernel_copy(NORMAL, &kernel_buf)
+     memmove(kernel_load_addr, kernel_buf->data, 1024);
+     kernel_binary_size = kernel_binary_size-1024;
+    }
+    else{
+      kernel_copy(NORMAL, &kernel_buf)
+      memmove(kernel_load_addr, kernel_buf->data, kernel_binary_size);
+
+    }
+
+     kernel_buf->blockno = (kernel_buf->blockno) + 1;
+    
+  }
+
   /* CSE 536: Write the correct kernel entry point */
   w_mepc((uint64) kernel_entry);
  
- out:
+//  out:
   /* CSE 536: Provide system information to the kernel. */
 
   /* CSE 536: Send the observed hash value to the kernel (using sys_info_ptr) */
