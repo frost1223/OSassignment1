@@ -115,22 +115,26 @@ void start()
   uint64 kernel_load_addr       = find_kernel_load_addr(NORMAL);
   uint64 kernel_binary_size     = find_kernel_size(NORMAL);     
   uint64 kernel_entry           = find_kernel_entry_addr(NORMAL);
-  struct buf* kernel_buf;
-  kernel_buf->blockno = 4;
-  while(kernel_binary_size !=0){
+  struct buf kernel_buf;
+  kernel_buf.blockno = 4;
+  char *kload = (char *)kernel_load_addr;
+  while(kernel_binary_size >0){
     if(kernel_binary_size>1024){
 
-     kernel_copy(NORMAL, &kernel_buf)
-     memmove(kernel_load_addr, kernel_buf->data, 1024);
+     kernel_copy(NORMAL, &kernel_buf);
+     memmove(kload, kernel_buf.data, 1024);
      kernel_binary_size = kernel_binary_size-1024;
+     kload = kload+1024;
     }
     else{
-      kernel_copy(NORMAL, &kernel_buf)
-      memmove(kernel_load_addr, kernel_buf->data, kernel_binary_size);
+      kernel_copy(NORMAL, &kernel_buf);
+      memmove(kload, kernel_buf.data, kernel_binary_size);
+      kernel_binary_size = 0;
+      break;
 
     }
 
-     kernel_buf->blockno = (kernel_buf->blockno) + 1;
+     kernel_buf.blockno = (kernel_buf.blockno) + 1;
     
   }
 
