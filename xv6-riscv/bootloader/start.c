@@ -86,16 +86,35 @@ bool is_secure_boot(void) {
   memcpy(sys_info_ptr->expected_kernel_measurement, trusted_kernel_hash, 32);
 
   uint64 kernel_binary_size_new = find_kernel_size(NORMAL);
-  uint64 Kernel_blocks = (kernel_binary_size_new)/BSIZE;
+  // uint64 Kernel_blocks = (kernel_binary_size_new)/BSIZE
+  int block = 0;
+  b.blockno = 0;
 
-    for (int blockno = 0; blockno < Kernel_blocks-1; blockno++) {
-    b.blockno = blockno;
-    kernel_copy(NORMAL, &b);
-    sha256_update(&sha256_ctx, (const unsigned char*)b.data, BSIZE);
+    // for (int blockno = 0; blockno <= Kernel_blocks-1; blockno++) {
+    // b.blockno = blockno;
+    // kernel_copy(NORMAL, &b);
+    // sha256_update(&sha256_ctx, (const unsigned char*)b.data, BSIZE);
+    // kernel_binary_size_new = kernel_binary_size_new - BSIZE;
+    // }
+    
+    // kernel_copy(NORMAL, &b);
+    // sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new);
+
+  while(kernel_binary_size_new > 0){
+    if(kernel_binary_size_new > 1024){
+
+     kernel_copy(NORMAL, &b);
+     sha256_update(&sha256_ctx, (const unsigned char*)b.data, BSIZE);
     }
-    kernel_binary_size_new = kernel_binary_size_new - (Kernel_blocks-1)*BSIZE;
-    kernel_copy(NORMAL, &b);
-    sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new);
+    else{
+      kernel_copy(NORMAL, &kernel_buf);
+      sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new)
+
+    }
+
+     kernel_buf.blockno = (kernel_buf.blockno) + 1;
+    
+  }
     sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
 
     if (memcmp(sys_info_ptr->observed_kernel_measurement, sys_info_ptr->observed_kernel_measurement, 32) != 0) {
@@ -185,8 +204,7 @@ void start()
       kernel_copy(NORMAL, &kernel_buf);
       memmove(kload, kernel_buf.data, kernel_binary_size);
       kernel_binary_size = 0;
-      break;
-
+      
     }
 
      kernel_buf.blockno = (kernel_buf.blockno) + 1;
