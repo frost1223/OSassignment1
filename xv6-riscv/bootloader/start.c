@@ -55,8 +55,9 @@ bool is_secure_boot(void) {
   struct buf b;
   sha256_update(&sha256_ctx, (const unsigned char*) b.data, BSIZE);
   sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
+  memcpy(sys_info_ptr->expected_kernel_measurement, trusted_kernel_hash[32], 32)
 
-  uint64 kernel_binary_size _1    = find_kernel_size(NORMAL);
+  uint64 kernel_binary_size_new = find_kernel_size(NORMAL);
   uint64 Kernel_blocks = (kernel_binary_size _1)/BSIZE;
 
     for (int blockno = 0; blockno < Kernel_blocks-1; blockno++) {
@@ -64,11 +65,11 @@ bool is_secure_boot(void) {
     kernel_copy(NORMAL, &b);
     sha256_update(&sha256_ctx, (const unsigned char*)b.data, BSIZE);
     }
-    kernel_binary_size = kernel_binary_size - (Kernel_blocks-1)*BSIZE;
+    kernel_binary_size_new = kernel_binary_size_new - (Kernel_blocks-1)*BSIZE;
     kernel_copy(NORMAL, &b);
-    sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size);
+    sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new);
 
-    if (memcmp(sys_info_ptr->observed_kernel_measurement, trusted_kernel_hash, 32) != 0) {
+    if (memcmp(sys_info_ptr->observed_kernel_measurement, sys_info_ptr->observed_kernel_measurement, 32) != 0) {
 
       // setup_recovery_kernel();
       return false;

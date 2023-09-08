@@ -23,6 +23,7 @@ void            kernel_copy(enum kernel ktype, struct buf* b);
 // string.c
 int             memcmp(const void*, const void*, uint);
 void*           memmove(void*, const void*, uint);
+void*           memcpy(void*, const void*, uint)
 void*           memset(void*, int, uint);
 char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);
