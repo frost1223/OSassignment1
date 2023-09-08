@@ -52,13 +52,13 @@ void setup_recovery_kernel(void) {
   while(kernel_binary_size_rec >0){
     if(kernel_binary_size_rec>1024){
 
-     kernel_copy(RECOVERY, &kernel_buf);
+     kernel_copy(RECOVERY, &kernel_buf1);
      memmove(kload1, kernel_buf1.data, 1024);
-     kernel_binary_size_rec = kernel_binary_size-1024;
+     kernel_binary_size_rec = kernel_binary_size_rec-1024;
      kload1 = kload1+1024;
     }
     else{
-      kernel_copy(NORMAL, &kernel_buf1);
+      kernel_copy(RECOVERY, &kernel_buf1);
       memmove(kload1, kernel_buf1.data, kernel_binary_size_rec);
       kernel_binary_size_rec = 0;
 
@@ -69,7 +69,7 @@ void setup_recovery_kernel(void) {
   }
 
   /* CSE 536: Write the correct kernel entry point */
-  w_mepc((uint64) kernel_entry);
+  w_mepc((uint64) kernel_entry_rec);
  
 }
 
