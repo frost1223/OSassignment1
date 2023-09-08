@@ -83,11 +83,11 @@ bool is_secure_boot(void) {
   struct buf b;
   // sha256_update(&sha256_ctx, (const unsigned char*) b.data, BSIZE);
   // sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
-  memcpy(sys_info_ptr->expected_kernel_measurement, trusted_kernel_hash, 32);
+ memcpy(sys_info_ptr->expected_kernel_measurement, trusted_kernel_hash, 32);
 
   uint64 kernel_binary_size_new = find_kernel_size(NORMAL);
   // uint64 Kernel_blocks = (kernel_binary_size_new)/BSIZE
-  int block = 0;
+
   b.blockno = 0;
 
     // for (int blockno = 0; blockno <= Kernel_blocks-1; blockno++) {
@@ -105,21 +105,23 @@ bool is_secure_boot(void) {
 
      kernel_copy(NORMAL, &b);
      sha256_update(&sha256_ctx, (const unsigned char*)b.data, BSIZE);
+     kernel_binary_size_new = kernel_binary_size_new-1024;
     }
     else{
-      kernel_copy(NORMAL, &kernel_buf);
-      sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new)
+      kernel_copy(NORMAL, &b);
+      sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new);
+      kernel_binary_size_new = 0;
 
     }
 
-     kernel_buf.blockno = (kernel_buf.blockno) + 1;
+     b.blockno = (b.blockno) + 1;
     
   }
     sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
 
-    if (memcmp(sys_info_ptr->observed_kernel_measurement, sys_info_ptr->observed_kernel_measurement, 32) != 0) {
+    if (memcmp(sys_info_ptr->expected_kernel_measurement, sys_info_ptr->observed_kernel_measurement, 32) != 0) {
 
-      setup_recovery_kernel();
+     setup_recovery_kernel();
       return false;
 
     }else{
@@ -177,6 +179,7 @@ void start()
     w_pmpaddr0(0x0ull);
     w_pmpcfg0(0x0);
   #endif
+    sys_info_ptr = (struct sys_info*)SYSINFOADDR;
 
   /* CSE 536: Verify if the kernel is untampered for secure boot */
   if (!is_secure_boot()) {
@@ -216,7 +219,6 @@ void start()
  
  out:
   /* CSE 536: Provide system information to the kernel. */
-  sys_info_ptr = (struct sys_info*)SYSINFOADDR;
   sys_info_ptr->bl_start = KERNBASE;
   sys_info_ptr->bl_end = SYSINFOADDR;
   sys_info_ptr->dr_start = KERNBASE;
