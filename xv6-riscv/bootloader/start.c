@@ -31,6 +31,10 @@ struct sys_info {
   BYTE observed_kernel_measurement[32];
 };
 struct sys_info* sys_info_ptr;
+sys_info_ptr->bl_start = KERNBASE;
+sys_info_ptr->bl_end = PHYSTOP;
+sys_info_ptr->dr_start = RAMDISKBASE; 
+sys_info_ptr->dr_end = RAMDISKLOAD; 
 
 extern void _entry(void);
 void panic(char *s)
