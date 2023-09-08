@@ -31,10 +31,7 @@ struct sys_info {
   BYTE observed_kernel_measurement[32];
 };
 struct sys_info* sys_info_ptr;
-sys_info_ptr->bl_start = KERNBASE;
-sys_info_ptr->bl_end = PHYSTOP;
-sys_info_ptr->dr_start = RAMDISKBASE; 
-sys_info_ptr->dr_end = RAMDISKLOAD; 
+
 
 extern void _entry(void);
 void panic(char *s)
@@ -73,7 +70,13 @@ bool is_secure_boot(void) {
 void start()
 {
   /* CSE 536: Define the system information table's location. */
-  sys_info_ptr = (struct sys_info*) 0x0;
+  /*sys_info_ptr = (struct sys_info*) 0x0;*/
+  sys_info_ptr = (struct sys_info*)SYSINFOADDR;
+  sys_info_ptr->bl_start = KERNBASE;
+  sys_info_ptr->bl_end = SYSINFOADDR;
+  sys_info_ptr->dr_start = KERNBASE;
+  sys_info_ptr->dr_end = PHYSTOP;
+
 
   // keep each CPU's hartid in its tp register, for cpuid().
   int id = r_mhartid();
