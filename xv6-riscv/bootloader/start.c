@@ -43,6 +43,34 @@ void panic(char *s)
 /* CSE 536: Boot into the RECOVERY kernel instead of NORMAL kernel
  * when hash verification fails. */
 void setup_recovery_kernel(void) {
+  uint64 kernel_load_addr_rec       = find_kernel_load_addr(RECOVERY);
+  uint64 kernel_binary_size_rec     = find_kernel_size(RECOVERY);     
+  uint64 kernel_entry_rec           = find_kernel_entry_addr(RECOVERY);
+  struct buf kernel_buf1;
+  kernel_buf1.blockno = 4;
+  char *kload1 = (char *)kernel_load_addr_rec;
+  while(kernel_binary_size_rec >0){
+    if(kernel_binary_size_rec>1024){
+
+     kernel_copy(RECOVERY, &kernel_buf);
+     memmove(kload1, kernel_buf1.data, 1024);
+     kernel_binary_size_rec = kernel_binary_size-1024;
+     kload1 = kload1+1024;
+    }
+    else{
+      kernel_copy(NORMAL, &kernel_buf1);
+      memmove(kload1, kernel_buf1.data, kernel_binary_size_rec);
+      kernel_binary_size_rec = 0;
+
+    }
+
+     kernel_buf1.blockno = (kernel_buf1.blockno) + 1;
+    
+  }
+
+  /* CSE 536: Write the correct kernel entry point */
+  w_mepc((uint64) kernel_entry);
+ 
 }
 
 /* CSE 536: Function verifies if NORMAL kernel is expected or tampered. */
@@ -53,12 +81,12 @@ bool is_secure_boot(void) {
    * (simplified template provided below) */
   sha256_init(&sha256_ctx);
   struct buf b;
-  sha256_update(&sha256_ctx, (const unsigned char*) b.data, BSIZE);
-  sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
-  memcpy(sys_info_ptr->expected_kernel_measurement, trusted_kernel_hash[32], 32)
+  // sha256_update(&sha256_ctx, (const unsigned char*) b.data, BSIZE);
+  // sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
+  memcpy(sys_info_ptr->expected_kernel_measurement, trusted_kernel_hash, 32);
 
   uint64 kernel_binary_size_new = find_kernel_size(NORMAL);
-  uint64 Kernel_blocks = (kernel_binary_size _1)/BSIZE;
+  uint64 Kernel_blocks = (kernel_binary_size_new)/BSIZE;
 
     for (int blockno = 0; blockno < Kernel_blocks-1; blockno++) {
     b.blockno = blockno;
@@ -71,7 +99,7 @@ bool is_secure_boot(void) {
 
     if (memcmp(sys_info_ptr->observed_kernel_measurement, sys_info_ptr->observed_kernel_measurement, 32) != 0) {
 
-      // setup_recovery_kernel();
+      setup_recovery_kernel();
       return false;
 
     }else{
@@ -94,11 +122,7 @@ void start()
 {
   /* CSE 536: Define the system information table's location. */
   /*sys_info_ptr = (struct sys_info*) 0x0;*/
-  sys_info_ptr = (struct sys_info*)SYSINFOADDR;
-  sys_info_ptr->bl_start = KERNBASE;
-  sys_info_ptr->bl_end = SYSINFOADDR;
-  sys_info_ptr->dr_start = KERNBASE;
-  sys_info_ptr->dr_end = PHYSTOP;
+
 
 
   // keep each CPU's hartid in its tp register, for cpuid().
@@ -171,8 +195,13 @@ void start()
   /* CSE 536: Write the correct kernel entry point */
   w_mepc((uint64) kernel_entry);
  
-//  out:
+ out:
   /* CSE 536: Provide system information to the kernel. */
+  sys_info_ptr = (struct sys_info*)SYSINFOADDR;
+  sys_info_ptr->bl_start = KERNBASE;
+  sys_info_ptr->bl_end = SYSINFOADDR;
+  sys_info_ptr->dr_start = KERNBASE;
+  sys_info_ptr->dr_end = PHYSTOP;
 
   /* CSE 536: Send the observed hash value to the kernel (using sys_info_ptr) */
 
