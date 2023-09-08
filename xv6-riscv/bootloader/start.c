@@ -96,6 +96,7 @@ bool is_secure_boot(void) {
     kernel_binary_size_new = kernel_binary_size_new - (Kernel_blocks-1)*BSIZE;
     kernel_copy(NORMAL, &b);
     sha256_update(&sha256_ctx, (const unsigned char*)b.data, kernel_binary_size_new);
+    sha256_final(&sha256_ctx, sys_info_ptr->observed_kernel_measurement);
 
     if (memcmp(sys_info_ptr->observed_kernel_measurement, sys_info_ptr->observed_kernel_measurement, 32) != 0) {
 
