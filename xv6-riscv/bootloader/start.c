@@ -185,7 +185,7 @@ void start()
     w_pmpaddr0(toraddr>>2);
     w_pmpaddr1((napot1addr>>2) + (napot1size>>3) -1);
     w_pmpaddr2((napot2addr>>2) + (napot2size>>3) -1);
-    w_pmpcfg0(0x0F0F0F);
+    w_pmpcfg0(0x1F1F0F);
   #endif
     sys_info_ptr = (struct sys_info*)SYSINFOADDR;
 
