@@ -169,8 +169,9 @@ void start()
 
   /* CSE 536: With kernelpmp1, isolate upper 10MBs using TOR */ 
   #if defined(KERNELPMP1)
-    w_pmpaddr0(0x0ull);
-    w_pmpcfg0(0x0);
+    uint64 pmpaddr = KERNBASE + 117*1024*1024;
+    w_pmpaddr0(pmpaddr>>2);
+    w_pmpcfg0(0xf);
   #endif
 
 
