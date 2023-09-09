@@ -177,8 +177,15 @@ void start()
 
   /* CSE 536: With kernelpmp2, isolate 118-120 MB and 122-126 MB using NAPOT */ 
   #if defined(KERNELPMP2)
-    w_pmpaddr0(0x0ull);
-    w_pmpcfg0(0x0);
+    uint64 toradrr = KERNBASE + 118*1024*1024;
+    uint64 napot1addr = toraddr + 2*1024*1024;
+    uint64 napot1size = 2*1024*1024;
+    uint64 napot2addr = toradrr + 8*1024*1024;
+    uint64 napot2size = (2*1024*1024);
+    w_pmpaddr0(toraddr>>2);
+    w_pmpaddr1(napot1addr>>2 + napot1size>>3 -1);
+    w_pmpaddr2(napot2addr>>2 + napot2size>>3 -1);
+    w_pmpcfg0(0x0F0F0F);
   #endif
     sys_info_ptr = (struct sys_info*)SYSINFOADDR;
 
